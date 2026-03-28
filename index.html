@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoBot Starter Kit — Build Your Own Trading Bot</title>
+<meta name="description" content="Production-ready Python trading bot template for Binance. 5 built-in strategies, risk management, paper trading mode. From a developer who runs bots on live markets.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07080a;--bg2:#0e1015;--text:#e2e0db;--dim:#6b6962;
+  --green:#00ff88;--green-dim:rgba(0,255,136,0.08);
+  --red:#ff4444;--yellow:#ffd700;
+  --mono:'Space Mono',monospace;--sans:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* Scanline effect */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.01) 2px,rgba(0,255,136,0.01) 4px);
+  pointer-events:none;z-index:9999;
+}
+
+.container{max-width:900px;margin:0 auto;padding:0 2rem}
+
+/* HERO */
+.hero{padding:6rem 0 4rem;text-align:center;position:relative}
+.hero::after{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(0,255,136,0.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.badge{
+  display:inline-block;font-family:var(--mono);font-size:0.7rem;
+  padding:0.4rem 1rem;border:1px solid var(--green);color:var(--green);
+  letter-spacing:0.15em;text-transform:uppercase;margin-bottom:2rem;
+}
+
+h1{
+  font-family:var(--sans);font-size:clamp(2.5rem,6vw,4.5rem);
+  font-weight:800;line-height:1.1;letter-spacing:-0.03em;
+  margin-bottom:1.5rem;
+}
+h1 span{color:var(--green)}
+
+.hero-sub{
+  font-size:1.15rem;color:var(--dim);max-width:600px;
+  margin:0 auto 2.5rem;line-height:1.7;
+}
+
+.price-hero{
+  font-family:var(--mono);font-size:3rem;color:var(--green);
+  margin-bottom:0.5rem;
+}
+.price-hero .old{
+  font-size:1.5rem;color:var(--dim);text-decoration:line-through;
+  margin-right:0.5rem;
+}
+.price-note{font-size:0.85rem;color:var(--dim);margin-bottom:2rem}
+
+.cta{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  padding:1rem 2.5rem;background:var(--green);color:var(--bg);
+  font-family:var(--sans);font-weight:700;font-size:1.1rem;
+  border:none;cursor:pointer;transition:all 0.3s;
+  text-transform:uppercase;letter-spacing:0.05em;
+}
+.cta:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(0,255,136,0.3)}
+
+.guarantee{
+  margin-top:1.5rem;font-family:var(--mono);font-size:0.75rem;
+  color:var(--dim);
+}
+
+/* TERMINAL DEMO */
+.terminal{
+  background:var(--bg2);border:1px solid #1a1d24;
+  margin:3rem auto;max-width:700px;overflow:hidden;
+}
+.terminal-bar{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.8rem 1rem;background:#12141a;border-bottom:1px solid #1a1d24;
+}
+.terminal-dot{width:10px;height:10px;border-radius:50%}
+.terminal-dot.r{background:var(--red)}.terminal-dot.y{background:var(--yellow)}.terminal-dot.g{background:var(--green)}
+.terminal-title{font-family:var(--mono);font-size:0.7rem;color:var(--dim);margin-left:0.5rem}
+.terminal-body{padding:1.5rem;font-family:var(--mono);font-size:0.8rem;line-height:1.8}
+.terminal-body .prompt{color:var(--green)}
+.terminal-body .output{color:var(--dim)}
+.terminal-body .highlight{color:var(--green)}
+.terminal-body .warn{color:var(--yellow)}
+
+/* FEATURES */
+.section{padding:4rem 0}
+.section-label{
+  font-family:var(--mono);font-size:0.7rem;color:var(--green);
+  letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.8rem;
+}
+.section h2{
+  font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;
+  letter-spacing:-0.02em;margin-bottom:2.5rem;
+}
+
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:1.5rem;
+}
+.feature{
+  background:var(--bg2);border:1px solid #1a1d24;padding:2rem;
+  transition:all 0.3s;
+}
+.feature:hover{border-color:rgba(0,255,136,0.3);transform:translateY(-2px)}
+.feature-icon{font-size:1.8rem;margin-bottom:1rem}
+.feature h3{font-size:1.1rem;font-weight:600;margin-bottom:0.5rem}
+.feature p{color:var(--dim);font-size:0.9rem;line-height:1.6}
+
+/* STRATEGIES */
+.strategies{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:1rem;margin-top:2rem;
+}
+.strategy{
+  background:var(--bg2);border:1px solid #1a1d24;padding:1.5rem;
+  text-align:center;transition:all 0.3s;
+}
+.strategy:hover{border-color:var(--green)}
+.strategy-name{font-family:var(--mono);font-size:0.8rem;color:var(--green);margin-bottom:0.3rem}
+.strategy-desc{font-size:0.75rem;color:var(--dim)}
+
+/* WHAT YOU GET */
+.checklist{list-style:none;max-width:600px}
+.checklist li{
+  padding:0.8rem 0;border-bottom:1px solid #1a1d24;
+  display:flex;align-items:flex-start;gap:0.8rem;
+}
+.checklist li::before{
+  content:'✓';color:var(--green);font-weight:700;
+  font-family:var(--mono);flex-shrink:0;
+}
+
+/* WHO THIS IS FOR */
+.audience-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;
+}
+.audience-card{
+  background:var(--bg2);border:1px solid #1a1d24;padding:2rem;
+}
+.audience-card h4{font-size:1rem;margin-bottom:0.5rem}
+.audience-card p{color:var(--dim);font-size:0.9rem}
+
+/* PROOF */
+.proof{
+  background:var(--bg2);border:1px solid #1a1d24;
+  padding:2.5rem;margin:2rem 0;
+}
+.proof-quote{
+  font-size:1.1rem;font-style:italic;margin-bottom:1rem;
+  line-height:1.7;
+}
+.proof-author{font-family:var(--mono);font-size:0.8rem;color:var(--green)}
+
+/* FAQ */
+.faq-item{border-bottom:1px solid #1a1d24;padding:1.5rem 0}
+.faq-q{font-weight:600;font-size:1rem;margin-bottom:0.5rem}
+.faq-a{color:var(--dim);font-size:0.9rem;line-height:1.7}
+
+/* FINAL CTA */
+.final-cta{
+  text-align:center;padding:5rem 0;
+  border-top:1px solid #1a1d24;
+}
+
+/* FOOTER */
+footer{
+  text-align:center;padding:2rem;
+  font-family:var(--mono);font-size:0.7rem;color:var(--dim);
+}
+
+@media(max-width:600px){
+  .container{padding:0 1rem}
+  .strategies{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">From a dev who runs bots on live markets</div>
+  <h1>Stop watching tutorials.<br><span>Start trading with real code.</span></h1>
+  <p class="hero-sub">A production-ready Python trading bot template for Binance. 5 strategies, risk management, paper trading. Ready to deploy in 30 minutes.</p>
+  
+  <div class="price-hero"><span class="old">$79</span>$49</div>
+  <div class="price-note">Launch price — goes up soon</div>
+  
+  <a href="https://gumroad.com/l/crypto-bot-kit" class="cta">Get the Starter Kit →</a>
+  <div class="guarantee">30-day money-back guarantee · Instant download · Free updates for 6 months</div>
+</section>
+
+<!-- TERMINAL DEMO -->
+<div class="terminal">
+  <div class="terminal-bar">
+    <div class="terminal-dot r"></div>
+    <div class="terminal-dot y"></div>
+    <div class="terminal-dot g"></div>
+    <span class="terminal-title">alphabot_demo.py</span>
+  </div>
+  <div class="terminal-body">
+    <div><span class="prompt">$</span> python3 bot.py --mode paper --pair DOT/USDT</div>
+    <div class="output">[2026-03-25 14:32:01] Connecting to Binance...</div>
+    <div class="output">[2026-03-25 14:32:02] Paper trading mode: ON</div>
+    <div class="output">[2026-03-25 14:32:03] Loading strategy: RSI_Reversal</div>
+    <div class="output">[2026-03-25 14:32:15] <span class="highlight">SIGNAL: BUY</span> | DOT/USDT | Confidence: 94.2%</div>
+    <div class="output">[2026-03-25 14:32:15] Entry: $7.42 | SL: $7.12 | TP: $8.15</div>
+    <div class="output">[2026-03-25 16:45:33] <span class="warn">SIGNAL: SELL</span> | +9.8% | P&L: +$73.50</div>
+    <div class="output">[2026-03-25 16:45:33] Total trades: 12 | Win rate: 75%</div>
+    <div><span class="prompt">$</span> <span class="highlight">_</span></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-label">// What's Inside</div>
+  <h2>Everything you need to start trading automatically</h2>
+  <div class="features-grid">
+    <div class="feature">
+      <div class="feature-icon">🤖</div>
+      <h3>Complete Trading Bot</h3>
+      <p>Clean, modular Python code. Not a tutorial project — real production patterns from a live trading system.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h3>5 Built-in Strategies</h3>
+      <p>RSI Reversal, MACD Crossover, Bollinger Breakout, EMA Trend, Volume Spike. Plug and play or customize.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🛡️</div>
+      <h3>Risk Management</h3>
+      <p>Configurable stop-loss, take-profit, position sizing, and max drawdown protection. Trade responsibly.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🧪</div>
+      <h3>Paper Trading Mode</h3>
+      <p>Test with real market data, zero risk. Validate your strategy before committing real funds.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">⚙️</div>
+      <h3>JSON Config</h3>
+      <p>Change pairs, timeframes, strategies, and risk parameters without touching any code. Just edit the config.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📖</div>
+      <h3>Setup Guide + Video</h3>
+      <p>Step-by-step instructions to get running in under 30 minutes. Video walkthrough of the architecture.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STRATEGIES -->
+<section class="section">
+  <div class="section-label">// Strategies Included</div>
+  <h2>5 battle-tested trading strategies</h2>
+  <p style="color:var(--dim);margin-bottom:1.5rem">Each strategy is modular — use them individually, combine them, or build your own on top of the framework.</p>
+  <div class="strategies">
+    <div class="strategy">
+      <div class="strategy-name">RSI Reversal</div>
+      <div class="strategy-desc">Mean reversion on oversold/overbought</div>
+    </div>
+    <div class="strategy">
+      <div class="strategy-name">MACD Cross</div>
+      <div class="strategy-desc">Momentum-based trend signals</div>
+    </div>
+    <div class="strategy">
+      <div class="strategy-name">Bollinger</div>
+      <div class="strategy-desc">Volatility breakout detection</div>
+    </div>
+    <div class="strategy">
+      <div class="strategy-name">EMA Trend</div>
+      <div class="strategy-desc">Multi-EMA trend following</div>
+    </div>
+    <div class="strategy">
+      <div class="strategy-name">Volume Spike</div>
+      <div class="strategy-desc">Volume anomaly trading</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="section">
+  <div class="section-label">// The Package</div>
+  <h2>What's in the download</h2>
+  <ul class="checklist">
+    <li>Complete Python trading bot source code (~1500 lines, well-documented)</li>
+    <li>5 ready-to-use trading strategies with configurable parameters</li>
+    <li>Risk management module (stop-loss, take-profit, position sizing)</li>
+    <li>Paper trading mode for safe testing with real market data</li>
+    <li>JSON configuration file — customize without coding</li>
+    <li>Multi-pair support (BTC, ETH, DOT, SOL, or any Binance pair)</li>
+    <li>Real-time logging and trade history export</li>
+    <li>Step-by-step setup guide (text + video walkthrough)</li>
+    <li>Architecture diagram explaining how everything connects</li>
+    <li>Free updates for 6 months after purchase</li>
+  </ul>
+</section>
+
+<!-- WHO IS THIS FOR -->
+<section class="section">
+  <div class="section-label">// Who This Is For</div>
+  <h2>Is this right for you?</h2>
+  <div class="audience-grid">
+    <div class="audience-card">
+      <h4>🧑‍💻 Developers</h4>
+      <p>You want a solid foundation to build your own trading bot without starting from scratch. You know Python but don't want to reinvent the wheel.</p>
+    </div>
+    <div class="audience-card">
+      <h4>📈 Traders</h4>
+      <p>You have a strategy that works manually and want to automate it. This gives you the infrastructure to execute 24/7.</p>
+    </div>
+    <div class="audience-card">
+      <h4>🎓 Learners</h4>
+      <p>You're studying algorithmic trading and want to see how a real production bot is structured — not textbook theory.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY DIFFERENT -->
+<section class="section">
+  <div class="section-label">// Why This Kit</div>
+  <h2>Not another tutorial project</h2>
+  <div class="proof">
+    <p class="proof-quote">"Most trading bot code on GitHub is broken, undocumented, or theoretical. This kit is based on AlphaBot — a real bot I built, tested, and run on live Binance markets. Every pattern in this code has survived contact with real market conditions."</p>
+    <p class="proof-author">— Morven, Creator</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+  <div class="section-label">// Questions</div>
+  <h2>FAQ</h2>
+  <div class="faq-item">
+    <div class="faq-q">Do I need to know Python?</div>
+    <div class="faq-a">Basic Python knowledge helps, but the setup guide walks you through everything step by step. If you can run a terminal command, you can get this running.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Does this guarantee profits?</div>
+    <div class="faq-a">No. Trading involves risk. This kit gives you professional-grade tools — your strategy, risk management, and market timing determine results. Always start with paper trading.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Can I use this on other exchanges?</div>
+    <div class="faq-a">Yes. The code uses the ccxt library, which supports 100+ exchanges. You'll need minor tweaks for non-Binance exchanges, but the core logic is exchange-agnostic.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Do I get updates?</div>
+    <div class="faq-a">Yes — free updates for 6 months after purchase. Any improvements or new strategies added to the kit are yours.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What if it doesn't work for me?</div>
+    <div class="faq-a">30-day money-back guarantee. If you're not satisfied, you get a full refund — no questions asked.</div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="section-label">// Ready to Build</div>
+  <h2 style="margin-bottom:1.5rem">Start trading<br>with <span style="color:var(--green)">real code</span></h2>
+  <div class="price-hero"><span class="old">$79</span>$49</div>
+  <div class="price-note">Launch price — increases after first 50 sales</div>
+  <a href="https://gumroad.com/l/crypto-bot-kit" class="cta">Get the Starter Kit →</a>
+  <div class="guarantee">30-day money-back guarantee · Instant download · Full source code</div>
+</section>
+
+</div>
+
+<footer>
+  © 2026 Morven · Built with precision · <a href="#" style="color:var(--green)">Portfolio</a>
+</footer>
+
+</body>
+</html>
