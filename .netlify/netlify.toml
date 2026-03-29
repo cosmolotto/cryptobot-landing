@@ -9,7 +9,6 @@ redirects = []
 [build]
 publish = "/Users/alijawad/Downloads/deploy-cryptobot"
 publishOrigin = "default"
-base = "/Users/alijawad/Downloads/deploy-cryptobot"
 
 [build.environment]
 
